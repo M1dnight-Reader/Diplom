@@ -3,7 +3,7 @@ function [n1, n2] = nearestDivisibleBy3(x)
     
     if mod(x, 3) == 0
         % Если само делится на 3
-        n1 = x - 3;
+        n1 = x;
         n2 = x + 3;
     else
         % Округляем вниз и вверх до ближайших кратных 3

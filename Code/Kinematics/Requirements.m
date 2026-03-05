@@ -8,17 +8,18 @@ clc
 % оси можно спокойно ставить планетарные редукторы
 
 eta = 0.9; % Примерное КПД
-ksi = 2.5; % Коэффициент динамичности для следящих приводов высокой точности
+ksi = 1.25; % Коэффициент динамичности для следящих приводов высокой точности
 i0 = [125, 125, 125, 100, 20];
 
 for ind = 1:5
     moments(ind).i = i0(ind);
+    motor(ind).i = i0(ind);
 
     % приведенный к валу мотора статический момент
-    M_stat_priv = ksi * moments(ind).stat / (moments(ind).i * eta);
+    M_stat_priv = ksi * (moments(ind).stat + moments(ind).react) / (moments(ind).i * eta);
 
     % статический момент на редукторе
-    M_stat_red = ksi * moments(ind).stat;
+    M_stat_red = ksi * (moments(ind).stat  + moments(ind).react);
 
     % приведенный к валу мотора динамический момент
     M_din_priv = moments(ind).i * moments(ind).e * (moments(ind).J / (moments(ind).i ^2));
@@ -34,11 +35,14 @@ for ind = 1:5
 
     % требуемые номинальные скорости мотора (rpm)
     rpm_nom_dvig = 60 * moments(ind).i * omega_max(ind) / (2 * pi);
+    motor(ind).nnom = rpm_nom_dvig;
+    motor(ind).nreq = motor(ind).nnom / motor(ind).i;
 
     % дополним расчет проверкой по мощности, чтобы проверить, что все
     % сработает (максимальная ммощность)
 
-    P_max = 2.5 * omega_max(ind) * (moments(ind).stat + moments(ind).e * moments(ind).J);
+    P_max = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react + moments(ind).e * moments(ind).J);
+    motor(ind).N = P_max;
 
     fprintf("Звено %.0f:\n" + ...
             "Статический момент: Mст = %.3f \n" + ...
@@ -56,14 +60,37 @@ end
 % После полученной информации, добавим моторам их параметры, найденные в
 % интернете.
 
-motor(1).N = 11000; % Вт
-motor(1).nreq = 210;
-motor(1).nmot = 975;
-fprintf("Параметры выбранного %.0f двигателя:\n" + ...
+semimotor = struct('N', {}, 'nmot', {}, 'nreq', {});
+
+index = 0;
+for ind = 1:5
+    fprintf("====================================\n" + ...
+            "Параметры выбранного %.0f двигателя:\n" + ...
             "Требуемая скорость: nreqs = %.3f rpm\n" + ...
             "Номинальная скорость: nном = %.3f rpm\n" + ...
             "Номинальная мощность: P_max = %.3f Вт\n" + ...
-            "\n", 1, motor(1).nreq, motor(1).nmot, motor(1).N);
+            "\n", ind, motor(ind).nreq, motor(ind).nnom, motor(ind).N);
+    index = index + 1;
+    semimotor(index).N = motor(ind).N; % Вт
+    semimotor(index).nmot = motor(ind).nnom;
+    semimotor(index).nreq = motor(ind).nnom / (motor(ind).i ^ (1/3));
+    fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+            "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+            "Номинальная скорость: nном = %.3f rpm\n" + ...
+            "Номинальная мощность: P_max = %.3f Вт\n" + ...
+            "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+    for jnd = 2:3
+        index = jnd + (ind - 1) * 3;
+        semimotor(index).N = semimotor(index - 1).N; % Вт
+        semimotor(index).nmot = semimotor(index - 1).nreq;
+        semimotor(index).nreq = semimotor(index - 1).nreq / (motor(ind).i ^ (1/3));        
+        fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+                "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+                "Номинальная скорость: nном = %.3f rpm\n" + ...
+                "Номинальная мощность: P_max = %.3f Вт\n" + ...
+                "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+    end    
+end
 
 reducer = struct('u', {}, 'k', {}, 'C', {}, 'gamma', {}, ...
                  'nah', {}, 'nbh', {}, 'nch', {}, ...

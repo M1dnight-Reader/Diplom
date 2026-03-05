@@ -4,17 +4,17 @@ fprintf("Параметры выбранного %.0f двигателя:\n" + .
             "Требуемая скорость: nreq = %.3f rpm\n" + ...
             "Номинальная скорость: nном = %.3f rpm\n" + ...
             "Номинальная мощность: P_max = %.3f Вт\n" + ...
-            "\n", 1, motor(1).nreq, motor(1).nmot, motor(1).N);
+            "\n", 1, semimotor(9).nreq, semimotor(9).nmot, semimotor(9).N);
 
 %=======4.КИНЕМАТИЧЕСКИЙ_РАСЧЕТ_ПРИВОДА=======
 
 % 4.1 Выбор двигателя и определение относительного передаточного числа
 
-reducer(1).u = motor(1).nmot / motor(1).nreq; % передаточное отношение редуктора
+reducer(1).u = semimotor(9).nmot / semimotor(9).nreq; % передаточное отношение редуктора
 reducer(1).k = reducer(1).u -1; % конструктивная характеристика
 reducer(1).C = 3; % k = 3,64 => число сателитов 3
 reducer(1).t = 5000; % время работы привода
-reducer(1).na = motor(1).nmot; % ВОТ ТУТ НАДО ПЕРЕСМОТРЕТЬ
+reducer(1).na = semimotor(9).nmot; % ВОТ ТУТ НАДО ПЕРЕСМОТРЕТЬ
 
 reducer(1).za = 18; % число зубьев на солнечной шестерне
 
@@ -36,7 +36,7 @@ za = reducer(1).za;
 for i = 1:5
     col1(i) = za;
     col2(i) = za * reducer(1).k;
-    [zb1, zb2] = nearestDivisibleBy3(za * reducer(1).k);
+    [zb1, zb2] = nearestDivisibleBy3(za * reducer(1).k)
     if mod(zb1 + za, 2) == 0
         zb = zb1;
     else
@@ -63,9 +63,9 @@ disp(T);
 
 % 4.3. Определение относительной частоты вращения колес
 
-reducer(1).nah = motor(1).nmot - motor(1).nreq;
-reducer(1).nbh = 0 - motor(1).nreq;
-reducer(1).nch = -(motor(1).nmot - motor(1).nreq) * 2 / (reducer(1).k - 1);
+reducer(1).nah = semimotor(9).nmot - semimotor(9).nreq;
+reducer(1).nbh = 0 - semimotor(9).nreq;
+reducer(1).nch = -(semimotor(9).nmot - semimotor(9).nreq) * 2 / (reducer(1).k - 1);
 
 
 
@@ -81,12 +81,12 @@ reducer(1).etarel = (1 + reducer(1).k * 0.99 * 0.97) / (1  + reducer(1).k);
 
 reducer(1).etamuf = 0.99;
 reducer(1).eta = reducer(1).etarel * reducer(1).etamuf; % с муфтой
-reducer(1).Ndvig = motor(1).N / reducer(1).eta; % Реальная мощность на двигателе с учетом потерь
+reducer(1).Ndvig = semimotor(9).N / reducer(1).eta; % Реальная мощность на двигателе с учетом потерь
 reducer(1).N1 = reducer(1).Ndvig * reducer(1).etamuf; % Мощность на ведущем валу
-reducer(1).T1 = 9.550 * reducer(1).N1 / motor(1).nmot; % Момент на ведущем валу
+reducer(1).T1 = 9.550 * reducer(1).N1 / semimotor(9).nmot; % Момент на ведущем валу
 reducer(1).Ta = reducer(1).T1;
 reducer(1).N2 = reducer(1).Ndvig * reducer(1).etarel; % Мощность на выходном валу
-reducer(1).T2 = 9.550 * reducer(1).N2 / motor(1).nreq; % Момент на выходном валу
+reducer(1).T2 = 9.550 * reducer(1).N2 / semimotor(9).nreq; % Момент на выходном валу
 
 
 
@@ -174,7 +174,7 @@ reducer(1).Kd = 780; % МПа1/3 – коэффициент, зависящий 
 % формы сопрягаемых поверхностей и длины контактной линии зацепления,
 % принимаемый для стальных прямозубых колес равным указанной величине
 
-reducer(1).psibd = 0.6; % принятая величина коэффициента ширины колеса по диаметру.
+reducer(1).psibd = 0.315; % принятая величина коэффициента ширины колеса по диаметру.
 % Относительная ширина колес в планетарном редукторе ψ ≈ (0,2)0,3...0,4(0,6) bd
 % выбирается в зависимости от точности изготовления и монтажа. Чем меньше ψbd,
 % тем равномернее нагружается зуб по ширине колеса, но радиальные размеры колеса при этом увеличиваются.
@@ -245,6 +245,26 @@ reducer(1).bc = reducer(1).bb + 4;
 
 % Окружная скорость V солнечного колеса, М*с^-1
 reducer(1).V = pi * reducer(1).da * reducer(1).na / 60000;
+
+fprintf("Число зубьев солнечного колеса: %.3f\n", reducer(1).za);
+fprintf("Модуль солнечного колеса: %.3f\n", reducer(1).m);
+fprintf("Диаметр делительной окружности солнечного колеса: %.3f\n", reducer(1).da);
+fprintf("Толщина солнечного колеса: %.3f\n\n", reducer(1).ba);
+
+fprintf("Число зубьев сателита: %.3f\n", reducer(1).zc);
+fprintf("Модуль сателита: %.3f\n", reducer(1).m);
+fprintf("Диаметр делительной окружности сателита: %.3f\n", reducer(1).dc);
+fprintf("Толщина сателита: %.3f\n\n", reducer(1).bc);
+
+fprintf("Число зубьев эпицикла: %.3f\n", reducer(1).zb);
+fprintf("Модуль эпицикла: %.3f\n", reducer(1).m);
+fprintf("Диаметр делительной окружности эпицикла: %.3f\n", reducer(1).db);
+fprintf("Толщина эпицикла: %.3f\n\n", reducer(1).bb);
+
+reducer(1).aw = (reducer(1).da + reducer(1).dc) / 2;
+
+fprintf("Межосевое расстояние: %.3f\n\n", reducer(1).aw);
+
 
 
 
@@ -400,6 +420,8 @@ reducer(1).d2 = floor(reducer(1).d2);
 
 % Межосевое расстояние передачи
 reducer(1).aw = (reducer(1).da + reducer(1).dc) / 2;
+
+fprintf("Межосевое расстояние: %.3f\n\n", reducer(1).aw);
 
 
 
