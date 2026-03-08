@@ -10,6 +10,7 @@ clc
 eta = 0.9; % Примерное КПД
 ksi = 1.25; % Коэффициент динамичности для следящих приводов высокой точности
 i0 = [125, 125, 125, 100, 20];
+% i0 = [125, 125, 125, 100, 20];
 
 for ind = 1:5
     moments(ind).i = i0(ind);
@@ -41,8 +42,14 @@ for ind = 1:5
     % дополним расчет проверкой по мощности, чтобы проверить, что все
     % сработает (максимальная ммощность)
 
-    P_max = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react + moments(ind).e * moments(ind).J);
+    P_max = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react);
+    P_max2 = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react) + moments(ind).e * moments(ind).J;
+    %  + moments(ind).e * moments(ind).J
+    if P_max == 0
+        P_max = ksi * omega_max(ind) * moments(ind).e * moments(ind).J;
+    end
     motor(ind).N = P_max;
+    motor(ind).N_semi = P_max2;
 
     fprintf("Звено %.0f:\n" + ...
             "Статический момент: Mст = %.3f \n" + ...
@@ -64,14 +71,14 @@ semimotor = struct('N', {}, 'nmot', {}, 'nreq', {});
 
 index = 0;
 for ind = 1:5
-    fprintf("====================================\n" + ...
-            "Параметры выбранного %.0f двигателя:\n" + ...
-            "Требуемая скорость: nreqs = %.3f rpm\n" + ...
-            "Номинальная скорость: nном = %.3f rpm\n" + ...
-            "Номинальная мощность: P_max = %.3f Вт\n" + ...
-            "\n", ind, motor(ind).nreq, motor(ind).nnom, motor(ind).N);
+    %fprintf("====================================\n" + ...
+     %       "Параметры выбранного %.0f двигателя:\n" + ...
+      %      "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+       %     "Номинальная скорость: nном = %.3f rpm\n" + ...
+        %    "Номинальная мощность: P_max = %.3f Вт\n" + ...
+         %   "\n", ind, motor(ind).nreq, motor(ind).nnom, motor(ind).N);
     index = index + 1;
-    semimotor(index).N = motor(ind).N; % Вт
+    semimotor(index).N = motor(ind).N_semi; % Вт
     semimotor(index).nmot = motor(ind).nnom;
     semimotor(index).nreq = motor(ind).nnom / (motor(ind).i ^ (1/3));
     fprintf("Параметры выбранного %.0f полумотора:\n" + ...
