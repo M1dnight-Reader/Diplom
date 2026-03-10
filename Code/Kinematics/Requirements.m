@@ -17,7 +17,7 @@ for ind = 1:5
     motor(ind).i = i0(ind);
 
     % приведенный к валу мотора статический момент
-    M_stat_priv = ksi * (moments(ind).stat + moments(ind).react) / (moments(ind).i * eta);
+    M_stat_priv = ksi * (moments(ind).stat + moments(ind).react) / (moments(ind).i);
 
     % статический момент на редукторе
     M_stat_red = ksi * (moments(ind).stat  + moments(ind).react);
@@ -45,8 +45,8 @@ for ind = 1:5
     % дополним расчет проверкой по мощности, чтобы проверить, что все
     % сработает (максимальная ммощность)
 
-    P_max = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react);
-    P_max2 = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react) + moments(ind).e * moments(ind).J;
+    P_max = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react) / eta;
+    P_max2 = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react) + moments(ind).e * moments(ind).J / eta;
     %  + moments(ind).e * moments(ind).J
     if P_max == 0
         P_max = ksi * omega_max(ind) * moments(ind).e * moments(ind).J;
@@ -80,7 +80,7 @@ for ind = 1:5
             "Требуемая скорость: nreqs = %.3f rpm\n" + ...
             "Номинальная скорость: nном = %.3f rpm\n" + ...
             "Номинальная мощность: P_max = %.3f Вт\n" + ...
-            "Суммарный момент на выходе редуктора: P_max = %.3f Нм\n" + ...
+            "Суммарный момент на выходе редуктора: Mmax = %.3f Нм\n" + ...
             "\n", ind, motor(ind).nreq, motor(ind).nnom, motor(ind).N, motor(ind).momred);
     index = index + 1;
     semimotor(index).N = motor(ind).N_semi; % Вт
