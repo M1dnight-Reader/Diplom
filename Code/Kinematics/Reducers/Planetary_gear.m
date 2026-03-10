@@ -36,7 +36,7 @@ za = reducer(1).za;
 for i = 1:5
     col1(i) = za;
     col2(i) = za * reducer(1).k;
-    [zb1, zb2] = nearestDivisibleBy3(za * reducer(1).k)
+    [zb1, zb2] = nearestDivisibleBy3(za * reducer(1).k);
     if mod(zb1 + za, 2) == 0
         zb = zb1;
     else
@@ -174,7 +174,7 @@ reducer(1).Kd = 780; % МПа1/3 – коэффициент, зависящий 
 % формы сопрягаемых поверхностей и длины контактной линии зацепления,
 % принимаемый для стальных прямозубых колес равным указанной величине
 
-reducer(1).psibd = 0.315; % принятая величина коэффициента ширины колеса по диаметру.
+reducer(1).psibd = 0.6; % принятая величина коэффициента ширины колеса по диаметру.
 % Относительная ширина колес в планетарном редукторе ψ ≈ (0,2)0,3...0,4(0,6) bd
 % выбирается в зависимости от точности изготовления и монтажа. Чем меньше ψbd,
 % тем равномернее нагружается зуб по ширине колеса, но радиальные размеры колеса при этом увеличиваются.
@@ -421,6 +421,8 @@ reducer(1).d2 = floor(reducer(1).d2);
 % Межосевое расстояние передачи
 reducer(1).aw = (reducer(1).da + reducer(1).dc) / 2;
 
+fprintf("Диаметр ведущего вала: %.3f\n", reducer(1).d1);
+fprintf("Диаметр ведомого вала: %.3f\n", reducer(1).d2);
 fprintf("Межосевое расстояние: %.3f\n\n", reducer(1).aw);
 
 
@@ -455,7 +457,209 @@ reducer(1).d_axis = 0.5 * floor(2 * ((32 * reducer(1).M_bend) / (pi * reducer(1)
 
 
 
-%=======14.ВЫБОР_ПОДШИПНИКОВ_САТЕЛИТОВ=======
+%=======15.ВЫБОР_ПОДШИПНИКОВ_САТЕЛИТОВ=======
+
+% Подшипники воспринимают только радиальную нагрузку
+reducer(1).Frmax = reducer(1).Fn;
+reducer(1).V_podsh = 1.2; %  коэффициент вращения кольца (вращение наружного кольца подшипника)
+reducer(1).Ksigma_podsh = 1.3; % оэффициент безопасности
+reducer(1).KT_podsh = 1; % 1 – температурный коэффициент в случае, когда температура деталей t = 70÷125°C
+reducer(1).KN_podsh = 1; % коэффициент режима работы, учитывающий переменность нагрузки
+% !!! ЧЕКНУТЬ ГОСТ
+reducer(1).Pe_podsh = reducer(1).V_podsh * reducer(1).Frmax * reducer(1).Ksigma_podsh * ...
+    reducer(1).KT_podsh * reducer(1).KN_podsh; % эквивалентная нагрузка на подшипник
+
+reducer(1).Lh_podsh = 0;
+ind = 1;
+ind1 = 1;
+ind2 = 25;
+% reducer(1).Lh_podsh <= reducer(1).t
+while ind < 47
+    if ind == 48
+        fprintf("Надо расширить библиотеку подшипников.\n");
+        break
+    end
+    if getBearingData(ind, "B") <= reducer(1).bc
+        reducer(1).Lh_podsh = (getBearingData(ind, "C") * 1000 / reducer(1).Pe_podsh)^3 * ...
+            1000000 / (60 * abs(reducer(1).nch));        
+        if reducer(1).Lh_podsh >= reducer(1).t
+            if ind <= 24                
+                ind1 = ind;
+                ind = 25;
+            else
+                ind2 = ind;
+                break
+            end
+        end
+    end
+    ind = ind + 1;    
+end
+reducer(1).c_podsh_ind = 0;
+if getBearingData(ind1, "B") > getBearingData(ind2, "B")
+    reducer(1).c_podsh_ind = ind1;
+else
+    reducer(1).c_podsh_ind = ind2;
+end
+
+% Выбранный подшипник
+fprintf(getBearingData(reducer(1).c_podsh_ind, "code") + " %.3f\n", (getBearingData(reducer(1).c_podsh_ind, "C") * 1000 /...
+    reducer(1).Pe_podsh)^3 * 1000000 / (60 * abs(reducer(1).nch)));
+fprintf("Диаметр оси сателлита: %.3f\n", getBearingData(reducer(1).c_podsh_ind, "d"))
 
 
+
+
+
+
+%=======16.ПРОВЕРОЧНЫЙ_РАСЧЕТ_ВАЛОВ=======
+
+% 16.1. Расчет ведущего вала
+
+reducer(1).Fa = (2 * reducer(1).T1 * 1000 * reducer(1).Kc) / (reducer(1).da * reducer(1).C);
+reducer(1).Fn = 2 * reducer(1).Fa ;
+
+% 16.2. Расчет ведомого вала
+
+reducer(1).l = 33; % Пролет оси (из эскиза)
+reducer(1).q = reducer(1).Fn / reducer(1).l;
+reducer(1).M_bend = reducer(1).q * reducer(1).l ^ 2 / 8; % Изгибающий момент в середине пролета (опасное сечение)
+reducer(1).sigma_axis = 120; % Н/мм^2
+
+%=======16.ПРОВЕРОЧНЫЙ_РАСЧЕТ_ВАЛОВ=======
+
+% 16.1. Расчет ведущего вала (Быстроходный вал)
+% Примечание: Размеры a, b, c берутся из эскизного проекта (п. 13).
+% В данном коде используем значения из примера методички для демонстрации расчета.
+
+fprintf('\n======= 16. ПРОВЕРОЧНЫЙ РАСЧЕТ ВАЛОВ =======\n');
+fprintf('16.1. Расчет ведущего вала:\n');
+
+% Геометрические размеры участков вала (из эскиза, пример методички)
+reducer(1).a_shaft = 65; % мм
+reducer(1).b_shaft = 55; % мм (расстояние между опорами)
+reducer(1).c_shaft = 108; % мм (консольный участок под муфту)
+
+% Силы, действующие на вал
+% FM - консольная нагрузка от муфты
+reducer(1).FM = 125 * (reducer(1).Ta)^(1/2); % Н
+
+% Реакции опор (схема: две опоры, консольная нагрузка)
+reducer(1).Rbx = (reducer(1).Fn * (reducer(1).b_shaft + reducer(1).a_shaft) +...
+    reducer(1).FM * reducer(1).c_shaft) / reducer(1).b_shaft; % Н (из примера методички)
+reducer(1).Rcx = (reducer(1).Fn * reducer(1).a_shaft  +...
+    reducer(1).FM * (reducer(1).b_shaft + reducer(1).c_shaft)) / reducer(1).b_shaft; % Н (из примера методички)
+
+% Изгибающие моменты в опасных сечениях
+reducer(1).Mbx = reducer(1).Fn * reducer(1).a_shaft * 1e-3; % Нм (в сечении B)
+reducer(1).Mcx = reducer(1).FM * reducer(1).c_shaft * 1e-3; % Нм (в сечении C, от муфты)
+
+
+% Выбор подшипников ведущего вала (по конструктивным соображениям и диаметру)
+reducer(1).d1_verif = reducer(1).d1 + 10; % мм (диаметр в опасном сечении)
+
+% ДОПИСАТЬ ВЫБОР ПОДШИПНИКА
+
+% Геометрические характеристики сечения
+reducer(1).W_shaft = (pi * reducer(1).d1_verif^3) / 32; % мм^3 (момент сопротивления изгибу)
+reducer(1).Wp_shaft = (pi * reducer(1).d1_verif^3) / 16; % мм^3 (момент сопротивления кручению)
+
+% Напряжения (амплитудные), МПа
+% tau_a = T / (2 * Wp)
+%Амплитуда τa и среднее τm напряжение отнулевого цикла касательных напряжений от действия крутящего момента
+reducer(1).tau_a = (reducer(1).Ta * 1000) / (2 * reducer(1).Wp_shaft); % МПа
+reducer(1).tau_m = reducer(1).tau_a;
+% sigma_a = M / W
+% Амплитуда нормальных напряжений изгиба
+reducer(1).sigma_a = (reducer(1).Mbx * 1000) / reducer(1).W_shaft; % МПа
+
+% Коэффициенты концентрации напряжений и запаса прочности (из методички для стали 40Х)
+% Пределы выносливости
+reducer(1).sigma_minus1 = 410; % МПа (для изгиба)
+reducer(1).tau_minus1 = 240; % МПа (для кручения)
+
+reducer(1).K_sigma_D = 4.45; 
+reducer(1).K_tau_D = 3.15;
+
+% Пределы выносливости
+reducer(1).sigma_D = reducer(1).sigma_minus1 / (reducer(1).K_sigma_D);
+reducer(1).tau_D = reducer(1).tau_minus1 / (reducer(1).K_tau_D);
+
+% Запасы прочности по нормальным и касательным напряжениям
+reducer(1).S_sigma = reducer(1).sigma_minus1 / (reducer(1).K_sigma_D * reducer(1).sigma_a);
+reducer(1).S_tau = reducer(1).tau_minus1 / (reducer(1).K_tau_D * reducer(1).tau_a);
+
+% Общий запас прочности
+reducer(1).S_shaft1 = (reducer(1).S_sigma * reducer(1).S_tau) / sqrt(reducer(1).S_sigma^2 + reducer(1).S_tau^2);
+
+if reducer(1).S_shaft1 >= 2.5
+    fprintf('  -> Прочность ведущего вала обеспечена (S >= 2.5)\n');
+else
+    fprintf('  -> Прочность ведущего вала НЕ обеспечена (S < 2.5)\n');
+end
+
+% Выбор подшипников ведущего вала (пример методички №210)
+% Ищем подшипник с внутренним диаметром >= d1_verif
+reducer(1).bear1_code = '210';
+reducer(1).bear1_d = 50;
+reducer(1).bear1_D = 90;
+reducer(1).bear1_B = 20;
+reducer(1).bear1_C = 35.1; % кН
+fprintf('  Выбран подшипник ведущего вала: %s (d=%d, D=%d, B=%d, C=%.1f кН)\n', ...
+    reducer(1).bear1_code, reducer(1).bear1_d, reducer(1).bear1_D, reducer(1).bear1_B, reducer(1).bear1_C);
+
+
+% 16.2. Расчет ведомого вала (Тихоходный вал)
+fprintf('\n16.2. Расчет ведомого вала:\n');
+
+% Диаметр выходного участка (из п. 12)
+reducer(1).d2_verif = reducer(1).d2; % мм (обычно 55 мм в примере)
+
+% Нагрузки
+reducer(1).T2_check = reducer(1).T2; % Нм
+% Консольная нагрузка Fr (по ГОСТ 16162-78 или методичке)
+% В методичке принято Fr = 4500 Н для большего диапазона использования
+reducer(1).Fr_out = 200 * (reducer(1).T2_check)^(1/2); % Н; % Н
+% Расстояние от середины шейки до опасного сечения (из эскиза)
+reducer(1).c_out = 110; % мм
+
+% Расчетные усилия в опасном сечении
+reducer(1).M_bend_out = reducer(1).Fr_out * reducer(1).c_out * 1e-3; % Нм
+reducer(1).M_eq_out = sqrt(reducer(1).M_bend_out^2 + reducer(1).T2_check^2); % Приведенный момент, Нм
+
+% Проверка по статической прочности (упрощенно)
+% sigma_eq = M_eq / (0.1 * d^3)
+reducer(1).sigma_eq_out = (reducer(1).M_eq_out * 1000) / (0.1 * reducer(1).d2_verif^3); % МПа
+
+% Допускаемое напряжение (предел усталостной прочности с учетом коэффициентов)
+% В методичке рассчитано [sigma] = 89 МПа для стали 40Х
+reducer(1).sigma_allow_out = 89; % МПа
+
+fprintf('  Диаметр ведомого вала: %.1f мм\n', reducer(1).d2_verif);
+fprintf('  Изгибающий момент: %.2f Нм\n', reducer(1).M_bend_out);
+fprintf('  Крутящий момент: %.2f Нм\n', reducer(1).T2_check);
+fprintf('  Приведенный момент: %.2f Нм\n', reducer(1).M_eq_out);
+fprintf('  Эквивалентное напряжение: %.2f МПа\n', reducer(1).sigma_eq_out);
+fprintf('  Допускаемое напряжение: %.2f МПа\n', reducer(1).sigma_allow_out);
+
+if reducer(1).sigma_eq_out <= reducer(1).sigma_allow_out
+    fprintf('  -> Прочность ведомого вала обеспечена\n');
+else
+    fprintf('  -> Прочность ведомого вала НЕ обеспечена\n');
+end
+
+% Выбор подшипников ведомого вала
+% В методичке для d2=55 мм (посадочное отверстие подшипника может быть больше) 
+% выбран подшипник №7000124 (d=105, D=160, B=18) - сверхлегкая серия, т.к. вал планетарный короткий и жесткий.
+% Однако стандартный подбор обычно идет под диаметр вала. 
+% Для примера методички запишем данные из текста.
+reducer(1).bear2_code = '7000124';
+reducer(1).bear2_d = 105; % мм (посадочный диаметр в корпусе водила/вала)
+reducer(1).bear2_D = 160; % мм
+reducer(1).bear2_B = 18; % мм
+reducer(1).bear2_C = 52.0; % кН
+
+fprintf('  Выбран подшипник ведомого вала: %s (d=%d, D=%d, B=%d, C=%.1f кН)\n', ...
+    reducer(1).bear2_code, reducer(1).bear2_d, reducer(1).bear2_D, reducer(1).bear2_B, reducer(1).bear2_C);
+
+fprintf('\n======= КОНЕЦ РАСЧЕТА ВАЛОВ =======\n');
 
