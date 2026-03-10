@@ -12,11 +12,11 @@ clc
 
 % массы приводов, кг
 motor1_mass = 3.5;
-motor2_mass = 5;
-motor3_mass = 3;
+motor2_mass = 7.7;
+motor3_mass = 4.1;
 motor4_mass = 1.5;
 motor5_mass = 1.5;
-motor_masses = [3.5, 5, 3, 1.5, 1.5];
+motor_masses = [motor1_mass, motor2_mass, motor3_mass, motor4_mass, motor5_mass];
 % зададим смещения моторов относительно осей, не забывая про конфигурацию
 
 indent5 = 230 / 1000;
@@ -25,12 +25,12 @@ indent4 = 120 / 1000;
 
 % массы звеньев, кг
 link1_mass = 7;
-link2_mass = 6;
-link3_mass = 5;
-link4_mass = 1;
-link5_mass = 1.2;
+link2_mass = 4.6;
+link3_mass = 4.1;
+link4_mass = 1.2;
+link5_mass = 2;
 link6_mass = 1.2;
-link_masses = [7, 6, 5, 1, 1.2, 1.2];
+link_masses = [link1_mass, link2_mass, link3_mass, link4_mass , link5_mass, link6_mass];
 
 % масса коробки (самой большой)
 box_mass = 5;

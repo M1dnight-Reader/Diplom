@@ -120,7 +120,7 @@ reducer = struct('u', {}, 'k', {}, 'C', {}, 'gamma', {}, ...
                  'Kfv', {}, 'Kfa', {}, 'Kfbetta', {}, 'YF1', {}, 'YF2', {}, 'Ke', {}, 'mt', {}, 'sigmaFC', {}, ...
                  'Vc', {}, 'sigmah_e', {}, 'Ze_e', {}, 'epsilona_e', {});
 
-semimotor(9).nmot = 975;
-semimotor(9).nreq = 210;
-semimotor(9).N = 11000;
+%semimotor(9).nmot = 975;
+%semimotor(9).nreq = 210;
+%semimotor(9).N = 11000;
 
