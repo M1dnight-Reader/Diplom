@@ -33,7 +33,7 @@ for ind = 1:5
     M_start = M_stat_priv + M_din_priv;
 
     % пусковой момент на выходе редуктора
-    M_start_red = M_stat_red + M_din_red
+    M_start_red = M_stat_red + M_din_red;
     motor(ind).momred = M_start_red;
     
 
