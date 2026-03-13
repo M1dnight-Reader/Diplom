@@ -1548,6 +1548,7 @@ gear2_mass = (3 * reducer2_ro * pi / 4 * (0.3 * reducer(10).ba *  reducer(10).da
     0.25 * reducer(10).C * reducer(10).bc * reducer(10).dc^2)/ 10^9);
 reducer2_mass = (1.5 + 1) * gear2_mass;
 total2_mass = (0.35 + 1) * reducer2_mass;
+semimotor(12).N = semimotor(12).N * 2;
 
 fprintf('  │ Массы шестерен (gear_mass)        │ %15.3f │ кг            │\n', gear2_mass);
 fprintf('  │ Массы редуктора (reducer_mass)    │ %15.3f │ кг            │\n', reducer2_mass);

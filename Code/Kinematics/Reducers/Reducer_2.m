@@ -265,9 +265,9 @@ reducer(6).zc = col7(the_chosen_m_ind);
 reducer(6).db = reducer(6).m * reducer(6).zb;
 reducer(6).dc = reducer(6).m * reducer(6).zc;
 
-reducer(6).bb = reducer(6).psibd * reducer(6).da;
+reducer(6).bc = reducer(6).psibd * reducer(6).da;
 reducer(6).ba = reducer(6).bb + 4;
-reducer(6).bc = reducer(6).bb + 4;
+reducer(6).bb = reducer(6).bb + 4;
 
 reducer(6).V = pi * reducer(6).da * reducer(6).na / 60000;
 
@@ -780,9 +780,9 @@ reducer(5).zc = reducer(6).zc;
 reducer(5).db = reducer(5).m * reducer(5).zb;
 reducer(5).dc = reducer(5).m * reducer(5).zc;
 
-reducer(5).bb = reducer(5).psibd * reducer(5).da;
+reducer(5).bc = reducer(5).psibd * reducer(5).da;
 reducer(5).ba = reducer(5).bb + 4;
-reducer(5).bc = reducer(5).bb + 4;
+reducer(5).bb = reducer(5).bb + 4;
 
 reducer(5).V = pi * reducer(5).da * reducer(5).na / 60000;
 
@@ -1295,9 +1295,9 @@ reducer(4).zc = reducer(6).zc;
 reducer(4).db = reducer(4).m * reducer(4).zb;
 reducer(4).dc = reducer(4).m * reducer(4).zc;
 
-reducer(4).bb = reducer(4).psibd * reducer(4).da;
+reducer(4).bc = reducer(4).psibd * reducer(4).da;
 reducer(4).ba = reducer(4).bb + 4;
-reducer(4).bc = reducer(4).bb + 4;
+reducer(4).bb = reducer(4).bb + 4;
 
 reducer(4).V = pi * reducer(4).da * reducer(4).na / 60000;
 

@@ -181,7 +181,8 @@ moments(2).stat = (links(2).m * links(2).r + ...
                    motor(4).m * (links(2).L + indent4) + ...
                    motor(3).m * links(2).L) ...
                    * g;
-moments(2).react = moments(3).J * moments(3).e + moments(4).J * moments(4).e;
+moments(2).react = 0;
+%moments(3).J * moments(3).e + moments(4).J * moments(4).e;
 
 % добавляются 4 мотора для вращения 2, 3, 4 и 5 осей
 moments(1).J = (links(1).Jz + ...  % вращение вокруг Z (вертикаль)
