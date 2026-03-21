@@ -12,10 +12,10 @@ clc
 
 % массы приводов, кг
 motor1_mass = 3.5;
-motor2_mass = 7.2;
-motor3_mass = 4.0;
-motor4_mass = 0.7;
-motor5_mass = 0.7;
+motor2_mass = 8.2;
+motor3_mass = 5.0;
+motor4_mass = 1.5;
+motor5_mass = 1.5;
 motor_masses = [motor1_mass, motor2_mass, motor3_mass, motor4_mass, motor5_mass];
 % зададим смещения моторов относительно осей, не забывая про конфигурацию
 

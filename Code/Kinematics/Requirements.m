@@ -9,7 +9,7 @@ clc
 
 eta = 0.9; % Примерное КПД
 ksi = 1.25; % Коэффициент динамичности для следящих приводов высокой точности
-i0 = [125, 125, 125, 100, 20];
+i0 = [125, 625, 64, 64, 20];
 % i0 = [125, 125, 125, 100, 20];
 
 for ind = 1:5
@@ -53,7 +53,50 @@ for ind = 1:5
     end
     motor(ind).N = P_max;
     motor(ind).N_semi = P_max2;
+
+    if ind == 4
+        moments(ind).i = i0(ind);
+        motor(ind).i = i0(ind);
     
+        % приведенный к валу мотора статический момент
+        M_stat_priv = ksi * (moments(ind).stat + moments(ind).react) / (moments(ind).i) / 2 / 2;
+    
+        % статический момент на редукторе
+        M_stat_red = ksi * (moments(ind).stat  + moments(ind).react) / 2 / 2;
+    
+        % приведенный к валу мотора динамический момент
+        M_din_priv = moments(ind).i * moments(ind).e * (moments(ind).J / ((moments(ind).i * 2 * 2) ^2));
+    
+        % динамический момент на редукторе
+        M_din_red = moments(ind).e * moments(ind).J / 2 / 2;
+        
+    
+        % пусковой момент
+        M_start = M_stat_priv + M_din_priv;
+    
+        % пусковой момент на выходе редуктора
+        M_start_red = M_stat_red + M_din_red;
+        motor(ind).momred = M_start_red;
+        
+    
+        % требуемые номинальные скорости мотора (rpm)
+        rpm_nom_dvig = 60 * moments(ind).i * omega_max(ind) / (2 * pi) * 2;
+        motor(ind).nnom = rpm_nom_dvig;
+        motor(ind).nreq = motor(ind).nnom / motor(ind).i;
+    
+        % дополним расчет проверкой по мощности, чтобы проверить, что все
+        % сработает (максимальная ммощность)
+    
+        P_max = ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react) / eta / 2;
+        P_max2 = (ksi * omega_max(ind) * (moments(ind).stat + moments(ind).react) + moments(ind).e * moments(ind).J / eta) / 2;
+        %  + moments(ind).e * moments(ind).J
+        if P_max == 0
+            P_max = ksi * omega_max(ind) * moments(ind).e * moments(ind).J;
+        end
+        motor(ind).N = P_max;
+        motor(ind).N_semi = P_max2;
+
+    end    
 
     fprintf("Звено %.0f:\n" + ...
             "Статический момент: Mст = %.3f \n" + ...
@@ -86,22 +129,59 @@ for ind = 1:5
     semimotor(index).N = motor(ind).N_semi; % Вт
     semimotor(index).nmot = motor(ind).nnom;
     semimotor(index).nreq = motor(ind).nnom / (motor(ind).i ^ (1/3));
-    %fprintf("Параметры выбранного %.0f полумотора:\n" + ...
-     %       "Требуемая скорость: nreqs = %.3f rpm\n" + ...
-      %      "Номинальная скорость: nном = %.3f rpm\n" + ...
-       %     "Номинальная мощность: P_max = %.3f Вт\n" + ...
-        %    "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
-    for jnd = 2:3
-        index = jnd + (ind - 1) * 3;
-        semimotor(index).N = semimotor(index - 1).N; % Вт
-        semimotor(index).nmot = semimotor(index - 1).nreq;
-        semimotor(index).nreq = semimotor(index - 1).nreq / (motor(ind).i ^ (1/3));        
+    if ind == 1
         %fprintf("Параметры выбранного %.0f полумотора:\n" + ...
-         %       "Требуемая скорость: nreqs = %.3f rpm\n" + ...
-          %      "Номинальная скорость: nном = %.3f rpm\n" + ...
-           %     "Номинальная мощность: P_max = %.3f Вт\n" + ...
-            %    "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
-    end    
+         %   "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+          %  "Номинальная скорость: nном = %.3f rpm\n" + ...
+           % "Номинальная мощность: P_max = %.3f Вт\n" + ...
+            %"\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+        for jnd = 2:3
+            index = jnd + (ind - 1) * 3;
+            semimotor(index).N = semimotor(index - 1).N; % Вт
+            semimotor(index).nmot = semimotor(index - 1).nreq;
+            semimotor(index).nreq = semimotor(index - 1).nreq / (motor(ind).i ^ (1/3));        
+            %fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+             %       "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+              %      "Номинальная скорость: nном = %.3f rpm\n" + ...
+               %     "Номинальная мощность: P_max = %.3f Вт\n" + ...
+                %    "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+        end
+    elseif ind == 2
+        semimotor(index).nreq = motor(ind).nnom / (motor(ind).i ^ (1/4));
+        %fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+         %   "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+          %  "Номинальная скорость: nном = %.3f rpm\n" + ...
+           % "Номинальная мощность: P_max = %.3f Вт\n" + ...
+            %"\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+        for jnd = 2:4
+            index = jnd + (ind - 1) * 3;
+            semimotor(index).N = semimotor(index - 1).N; % Вт
+            semimotor(index).nmot = semimotor(index - 1).nreq;
+            semimotor(index).nreq = semimotor(index - 1).nreq / (motor(ind).i ^ (1/4));        
+            fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+                    "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+                    "Номинальная скорость: nном = %.3f rpm\n" + ...
+                    "Номинальная мощность: P_max = %.3f Вт\n" + ...
+                    "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+        end
+    else
+        fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+            "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+            "Номинальная скорость: nном = %.3f rpm\n" + ...
+            "Номинальная мощность: P_max = %.3f Вт\n" + ...
+            "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+        for jnd = 2:3
+            index = jnd + (ind - 1) * 3 + 1;
+            semimotor(index).N = semimotor(index - 1).N; % Вт
+            semimotor(index).nmot = semimotor(index - 1).nreq;
+            semimotor(index).nreq = semimotor(index - 1).nreq / (motor(ind).i ^ (1/3));        
+            fprintf("Параметры выбранного %.0f полумотора:\n" + ...
+                    "Требуемая скорость: nreqs = %.3f rpm\n" + ...
+                    "Номинальная скорость: nном = %.3f rpm\n" + ...
+                    "Номинальная мощность: P_max = %.3f Вт\n" + ...
+                    "\n", index, semimotor(index).nreq, semimotor(index).nmot, semimotor(index).N);
+        end
+    end
 end
 
 reducer = struct('u', {}, 'k', {}, 'C', {}, 'gamma', {}, ...
@@ -120,6 +200,8 @@ reducer = struct('u', {}, 'k', {}, 'C', {}, 'gamma', {}, ...
                  'Kfv', {}, 'Kfa', {}, 'Kfbetta', {}, 'YF1', {}, 'YF2', {}, 'Ke', {}, 'mt', {}, 'sigmaFC', {}, ...
                  'Vc', {}, 'sigmah_e', {}, 'Ze_e', {}, 'epsilona_e', {});
 
+fprintf("Для 4й и 5й оси выбраны шаговые двигатели PL57H56-D8\n");
+fprintf("Для 3й оси выбран шаговый двигатель PL42H58-D5\n");
 %semimotor(9).nmot = 975;
 %semimotor(9).nreq = 210;
 %semimotor(9).N = 11000;

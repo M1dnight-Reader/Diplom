@@ -1,0 +1,314 @@
+# -*- coding: utf-8 -*-
+#spurInt____
+
+import pythoncom
+from win32com.client import Dispatch, gencache
+import math
+import array
+
+##import LDefin2D
+##import MiscellaneousHelpers as MH
+
+module = 0.800000000
+teeth = 99.00000000
+
+width = 12.96000000
+chamfer = 0.25 * module
+spline = 0
+
+#Set API KOMPAS
+kompas6_constants = gencache.EnsureModule("{75C9F5D0-B5B8-4526-8681-9903C567D2ED}", 0, 1, 0).constants
+kompas6_constants_3d = gencache.EnsureModule("{2CAF168C-7961-4B90-9DA2-701419BEEFE3}", 0, 1, 0).constants
+
+#Set interface description API5
+kompas6_api5_module = gencache.EnsureModule("{0422828C-F174-495E-AC5D-D31014DBBE87}", 0, 1, 0)
+kompas_object = kompas6_api5_module.KompasObject(Dispatch("Kompas.Application.5")._oleobj_.QueryInterface(kompas6_api5_module.KompasObject.CLSID, pythoncom.IID_IDispatch))
+##MH.iKompasObject  = kompas_object
+
+#Set interface description API7
+kompas_api7_module = gencache.EnsureModule("{69AC2981-37C0-4379-84FD-5DD2F3C0A520}", 0, 1, 0)
+application = kompas_api7_module.IApplication(Dispatch("Kompas.Application.7")._oleobj_.QueryInterface(kompas_api7_module.IApplication.CLSID, pythoncom.IID_IDispatch))
+##MH.iApplication  = application
+
+#New part
+documents = application.Documents
+kompas_document = documents.Add(kompas6_constants.ksDocumentPart, True)
+kompas_document.Active = True
+iDocument3D = kompas_object.ActiveDocument3D()
+
+Documents = application.Documents
+#Get active part
+kompas_document = application.ActiveDocument
+kompas_document_3d = kompas_api7_module.IKompasDocument3D(kompas_document)
+iDocument3D = kompas_object.ActiveDocument3D()
+
+iPart7 = kompas_document_3d.TopPart
+iPart = iDocument3D.GetPart(kompas6_constants_3d.pTop_Part)
+
+iSketch = iPart.NewEntity(kompas6_constants_3d.o3d_sketch)
+iDefinition = iSketch.GetDefinition()
+iPlane = iPart.GetDefaultEntity(kompas6_constants_3d.o3d_planeXOZ)
+iDefinition.SetPlane(iPlane)
+iSketch.Create()
+iDocument2D = iDefinition.BeginEdit()
+kompas_document_2d = kompas_api7_module.IKompasDocument2D(kompas_document)
+iDocument2D = kompas_object.ActiveDocument2D()
+
+rf = 39.2010010000
+dlt = 2.7989990000
+
+xe0 = 0.904424000000
+ye0 = -0.41043500000
+xe1 = 0.848567000000
+ye1 = -0.23253400000
+xe2 = 0.787528000000
+ye2 = -0.04774100000
+xe3 = 0.721092000000
+ye3 = 0.143826000000
+xe4 = 0.649045000000
+ye4 = 0.342048000000
+xe5 = 0.571177000000
+ye5 = 0.546799000000
+xe6 = 0.487279000000
+ye6 = 0.757948000000
+xe7 = 0.397145000000
+ye7 = 0.975359000000
+xe8 = 0.300573000000
+ye8 = 1.198893000000
+xe9 = 0.242446000000
+ye9 = 1.34070300000
+xe10 = 0.30057300000
+ye10 = 1.19889300000
+xe11 = 0.00000000000
+ye11 = 0.00000000000
+xe12 = 0.00000000000
+ye12 = 1.40000000000
+xe13 = 0.36260600000
+ye13 = 1.05635700000
+xe14 = 0.90442400000
+ye14 = -30.110435000
+xe15 = 0.00000000000
+ye15 = -39.600001000
+
+obj = iDocument2D.ksLineSeg(0, rf, 0, rf + dlt, 1)
+obj = iDocument2D.ksLineSeg(width, rf + dlt, 0, rf + dlt, 1)
+obj = iDocument2D.ksLineSeg(width, rf + dlt, width, rf, 1)
+obj = iDocument2D.ksLineSeg(0, rf, width, rf, 1)
+obj = iDocument2D.ksLineSeg(0, 0, width, 0, 3)
+iDefinition.EndEdit()
+iPart7 = kompas_document_3d.TopPart
+iPart = iDocument3D.GetPart(kompas6_constants_3d.pTop_Part)
+
+obj = iPart.NewEntity(kompas6_constants_3d.o3d_bossRotated)
+iDefinition = obj.GetDefinition()
+iCollection = iPart.EntityCollection(kompas6_constants_3d.o3d_edge)
+iCollection.SelectByPoint(0, 0, 0)
+iEdge = iCollection.Last()
+iEdgeDefinition = iEdge.GetDefinition()
+iSketch = iEdgeDefinition.GetOwnerEntity()
+iDefinition.SetSketch(iSketch)
+iRotatedParam = iDefinition.RotatedParam()
+iRotatedParam.direction = kompas6_constants_3d.dtNormal
+iRotatedParam.angleNormal = 360
+iRotatedParam.angleReverse = 0
+iRotatedParam.toroidShape = False
+iRotated = kompas_object.TransferInterface(obj, kompas6_constants.ksAPI7Dual, 0)
+iCollection = iPart.EntityCollection(kompas6_constants_3d.o3d_edge)
+iCollection.SelectByPoint(0, 0, 0)
+iEdge = iCollection.Last()
+iRotatedAxis = kompas_object.TransferInterface(iEdge, kompas6_constants.ksAPI7Dual, 0)
+iRotated.Axis = iRotatedAxis
+iThinParam = iDefinition.ThinParam()
+iThinParam.thin = False
+obj.name = "Dedendum cylinder"
+iColorParam = obj.ColorParam()
+iColorParam.ambient = 0.5
+iColorParam.color = 9474192
+iColorParam.diffuse = 0.6
+iColorParam.emission = 0.5
+iColorParam.shininess = 0.8
+iColorParam.specularity = 0.8
+iColorParam.transparency = 1
+obj.Create()
+iPart7 = kompas_document_3d.TopPart
+iPart = iDocument3D.GetPart(kompas6_constants_3d.pTop_Part)
+
+iSketch = iPart.NewEntity(kompas6_constants_3d.o3d_sketch)
+iDefinition = iSketch.GetDefinition()
+iPlane = iPart.GetDefaultEntity(kompas6_constants_3d.o3d_planeYOZ)
+iDefinition.SetPlane(iPlane)
+iSketch.Create()
+iDocument2D = iDefinition.BeginEdit()
+kompas_document_2d = kompas_api7_module.IKompasDocument2D(kompas_document)
+iDocument2D = kompas_object.ActiveDocument2D()
+x1 = ye0 - ye15
+y1 = xe0
+x2 = ye1 - ye15
+y2 = xe1
+x3 = ye2 - ye15
+y3 = xe2
+xm = -1/2 * (y1 * (x2**2 + y2**2 - x3**2 - y3**2) + y2 * (x3**2 + y3**2 - x1**2 - y1**2) + y3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+ym = 1/2 * (x1 * (x2**2 + y2**2 - x3**2 - y3**2) + x2 * (x3**2 + y3**2 - x1**2 - y1**2) + x3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+obj = iDocument2D.ksArcByPoint(xm, ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x3, y3, x1, y1, 1, 1)
+obj = iDocument2D.ksArcByPoint(xm, -ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x1, -y1, x3, -y3, 1, 1)
+x1 = ye2 - ye15
+y1 = xe2
+x2 = ye3 - ye15
+y2 = xe3
+x3 = ye4 - ye15
+y3 = xe4
+xm = -1/2 * (y1 * (x2**2 + y2**2 - x3**2 - y3**2) + y2 * (x3**2 + y3**2 - x1**2 - y1**2) + y3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+ym = 1/2 * (x1 * (x2**2 + y2**2 - x3**2 - y3**2) + x2 * (x3**2 + y3**2 - x1**2 - y1**2) + x3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+obj = iDocument2D.ksArcByPoint(xm, ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x3, y3, x1, y1, 1, 1)
+obj = iDocument2D.ksArcByPoint(xm, -ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x1, -y1, x3, -y3, 1, 1)
+x1 = ye4 - ye15
+y1 = xe4
+x2 = ye5 - ye15
+y2 = xe5
+x3 = ye6 - ye15
+y3 = xe6
+xm = -1/2 * (y1 * (x2**2 + y2**2 - x3**2 - y3**2) + y2 * (x3**2 + y3**2 - x1**2 - y1**2) + y3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+ym = 1/2 * (x1 * (x2**2 + y2**2 - x3**2 - y3**2) + x2 * (x3**2 + y3**2 - x1**2 - y1**2) + x3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+obj = iDocument2D.ksArcByPoint(xm, ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x3, y3, x1, y1, 1, 1)
+obj = iDocument2D.ksArcByPoint(xm, -ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x1, -y1, x3, -y3, 1, 1)
+x1 = ye6 - ye15
+y1 = xe6
+x2 = ye13 - ye15
+y2 = xe13
+x3 = ye8 - ye15
+y3 = xe8
+xm = -1/2 * (y1 * (x2**2 + y2**2 - x3**2 - y3**2) + y2 * (x3**2 + y3**2 - x1**2 - y1**2) + y3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+ym = 1/2 * (x1 * (x2**2 + y2**2 - x3**2 - y3**2) + x2 * (x3**2 + y3**2 - x1**2 - y1**2) + x3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+obj = iDocument2D.ksArcByPoint(xm, ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x3, y3, x1, y1, 1, 1)
+obj = iDocument2D.ksArcByPoint(xm, -ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x1, -y1, x3, -y3, 1, 1)
+##obj = iDocument2D.ksLineSeg(ye0 - ye15, xe0, ye10 - ye15, xe10, 1)
+##obj = iDocument2D.ksLineSeg(ye0 - ye15, -xe0, ye10 - ye15, -xe10, 1)
+nu = math.atan((xe13 - xe8)/(ye8 - ye13))
+ye8_13 = ye8 - xe8 * math.tan(nu)
+obj = iDocument2D.ksArcByPoint(ye8_13 - ye15, 0,math.sqrt(xe8**2 + (ye8 - ye8_13)**2), ye8 - ye15, -xe8, ye8 - ye15, xe8, 1, 1)
+##x1 = ye8 - ye15
+##y1 = xe8
+##x2 = ye12 - ye15
+##y2 = xe12
+##x3 = ye8 - ye15
+##y3 = -xe8
+##xm = -1/2 * (y1 * (x2**2 + y2**2 - x3**2 - y3**2) + y2 * (x3**2 + y3**2 - x1**2 - y1**2) + y3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+##ym = 1/2 * (x1 * (x2**2 + y2**2 - x3**2 - y3**2) + x2 * (x3**2 + y3**2 - x1**2 - y1**2) + x3 * (x1**2 + y1**2 - x2**2 - y2**2)) / (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+##obj = iDocument2D.ksArcByPoint(xm, ym, math.sqrt((x2 - xm)**2 + (y2 - ym)**2), x3, y3, x1, y1, 1, 1)
+obj = iDocument2D.ksPoint(ye1 - ye15, xe1, 0)
+obj = iDocument2D.ksLineSeg(ye0 - ye15, xe0, 0, 0, 1)
+obj = iDocument2D.ksLineSeg(ye0 - ye15, -xe0, 0, 0, 1)
+iDefinition.EndEdit()
+iPart7 = kompas_document_3d.TopPart
+iPart = iDocument3D.GetPart(kompas6_constants_3d.pTop_Part)
+
+obj = iPart.NewEntity(kompas6_constants_3d.o3d_cutExtrusion)
+iDefinition = obj.GetDefinition()
+iCollection = iPart.EntityCollection(kompas6_constants_3d.o3d_edge)
+##iCollection.SelectByPoint(0, 0, 0)
+iEdge = iCollection.Last()
+iEdgeDefinition = iEdge.GetDefinition()
+iSketch = iEdgeDefinition.GetOwnerEntity()
+iDefinition.SetSketch(iSketch)
+iDefinition.cut = True
+iExtrusionParam = iDefinition.ExtrusionParam()
+iExtrusionParam.direction = kompas6_constants_3d.dtNormal
+iExtrusionParam.depthNormal = width + 1
+iExtrusionParam.depthReverse = 0
+iExtrusionParam.draftOutwardNormal = False
+iExtrusionParam.draftOutwardReverse = False
+iExtrusionParam.draftValueNormal = 0
+iExtrusionParam.draftValueReverse = 0
+iExtrusionParam.typeNormal = kompas6_constants_3d.etBlind
+iExtrusionParam.typeReverse = kompas6_constants_3d.etBlind
+iThinParam = iDefinition.ThinParam()
+iThinParam.thin = False
+obj.name = "Tooth"
+iColorParam = obj.ColorParam()
+iColorParam.ambient = 0.5
+iColorParam.color = 9474192
+iColorParam.diffuse = 0.6
+iColorParam.emission = 0.5
+iColorParam.shininess = 0.8
+iColorParam.specularity = 0.8
+iColorParam.transparency = 1
+obj.Create()
+
+iPart7 = kompas_document_3d.TopPart
+iPart = iDocument3D.GetPart(kompas6_constants_3d.pTop_Part)
+
+obj = iPart.NewEntity(kompas6_constants_3d.o3d_circularCopy)
+iDefinition = obj.GetDefinition()
+iDefinition.count1 = 1
+iDefinition.count2 = int(teeth)
+iDefinition.factor1 = False
+iDefinition.factor2 = True
+iDefinition.geomArray = False
+iDefinition.inverce = False
+iDefinition.step1 = 10
+iDefinition.step2 = 360
+iAxis = iPart.GetDefaultEntity(kompas6_constants_3d.o3d_axisOX)
+iDefinition.SetAxis(iAxis)
+iArray = iDefinition.GetOperationArray()
+iCollection = iPart.EntityCollection(kompas6_constants_3d.o3d_edge)
+iCollection.SelectByPoint(width, xe1, -ye1 + ye15)
+iEdge = iCollection.Last()
+iEdgeDefinition = iEdge.GetDefinition()
+iOperation = iEdgeDefinition.GetOwnerEntity()
+iArray.Add(iOperation)
+obj.name = "Teeth"
+iColorParam = obj.ColorParam()
+iColorParam.ambient = 0.5
+iColorParam.color = 9474192
+iColorParam.diffuse = 0.6
+iColorParam.emission = 0.5
+iColorParam.shininess = 0.8
+iColorParam.specularity = 0.8
+iColorParam.transparency = 1
+obj.Create()
+
+iSketch = iPart.NewEntity(kompas6_constants_3d.o3d_sketch)
+iDefinition = iSketch.GetDefinition()
+iPlane = iPart.GetDefaultEntity(kompas6_constants_3d.o3d_planeXOZ)
+iDefinition.SetPlane(iPlane)
+iSketch.Create()
+iDocument2D = iDefinition.BeginEdit()
+kompas_document_2d = kompas_api7_module.IKompasDocument2D(kompas_document)
+iDocument2D = kompas_object.ActiveDocument2D()
+obj = iDocument2D.ksLineSeg(0, 0, width, 0, 3)
+obj = iDocument2D.ksLineSeg(0, rf + dlt - chamfer - 0.001, chamfer, rf + dlt - 0.001, 1)
+obj = iDocument2D.ksLineSeg(width - chamfer, rf + dlt - 0.001, chamfer, rf + dlt - 0.001, 1)
+obj = iDocument2D.ksLineSeg(width - chamfer, rf + dlt - 0.001, width, rf + dlt - chamfer - 0.001, 1)
+obj = iDocument2D.ksLineSeg(width, rf + dlt + 10, width, rf + dlt - chamfer - 0.001, 1)
+obj = iDocument2D.ksLineSeg(width, rf + dlt + 10, 0, rf + dlt + 10, 1)
+obj = iDocument2D.ksLineSeg(0, rf + dlt - chamfer - 0.001, 0, rf + dlt + 10, 1)
+iDefinition.EndEdit()
+iPart7 = kompas_document_3d.TopPart
+iPart = iDocument3D.GetPart(kompas6_constants_3d.pTop_Part)
+
+obj = iPart.NewEntity(kompas6_constants_3d.o3d_cutRotated)
+iDefinition = obj.GetDefinition()
+iDefinition.cut = True
+iCollection = iPart.EntityCollection(kompas6_constants_3d.o3d_edge)
+iCollection.SelectByPoint(0, 0, 0)
+iEdge = iCollection.Last()
+iEdgeDefinition = iEdge.GetDefinition()
+iSketch = iEdgeDefinition.GetOwnerEntity()
+iDefinition.SetSketch(iSketch)
+iRotatedParam = iDefinition.RotatedParam()
+iRotatedParam.direction = kompas6_constants_3d.dtNormal
+iRotatedParam.angleNormal = 360
+iRotatedParam.angleReverse = 0
+iRotatedParam.toroidShape = False
+iThinParam = iDefinition.ThinParam()
+iThinParam.thin = False
+obj.name = "Cut rotated"
+iColorParam = obj.ColorParam()
+iColorParam.ambient = 0.5
+iColorParam.color = 9474192
+iColorParam.diffuse = 0.6
+iColorParam.emission = 0.5
+iColorParam.shininess = 0.8
+iColorParam.specularity = 0.8
+iColorParam.transparency = 1
+obj.Create()

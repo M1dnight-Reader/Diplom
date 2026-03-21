@@ -14,12 +14,12 @@ theta = pi/6;       % угол, рад (90°)
 
 number = 3; %номер рассчитываемого звена
 T = 1.25;              % время, с
-theta = pi/3;       % угол, рад (90°)
+theta = pi/4;       % угол, рад (90°)
 [alpha3, omega_max3, t3] = angular_motion_profile(T, theta, number); % Получившиеся параметры
 
 number = 4; %номер рассчитываемого звена
 T = 1.25;              % время, с
-theta = pi/2;       % угол, рад (90°)
+theta = pi/3;       % угол, рад (90°)
 [alpha4, omega_max4, t4] = angular_motion_profile(T, theta, number); % Получившиеся параметры
 
 number = 5; %номер рассчитываемого звена
