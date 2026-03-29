@@ -647,36 +647,36 @@ fprintf('  Выбран подшипник ведущего вала: %s (d=%d, 
 fprintf('\n16.2. Расчет ведомого вала:\n');
 
 % Диаметр выходного участка (из п. 12)
-reducer(8).d2_verif = reducer(8).d2; % мм (обычно 55 мм в примере)
+reducer(10).d2_verif = reducer(10).d2; % мм (обычно 55 мм в примере)
 
 % Нагрузки
-reducer(8).T2_check = reducer(8).T2; % Нм
+reducer(10).T2_check = reducer(10).T2; % Нм
 % Консольная нагрузка Fr (по ГОСТ 16162-78 или методичке)
 % В методичке принято Fr = 4500 Н для большего диапазона использования
-reducer(8).Fr_out = 200 * (reducer(8).T2_check)^(1/2); % Н; % Н
+reducer(10).Fr_out = 200 * (reducer(10).T2_check)^(1/2); % Н; % Н
 % Расстояние от середины шейки до опасного сечения (из эскиза)
-reducer(8).c_out = 110; % мм
+reducer(10).c_out = 110; % мм
 
 % Расчетные усилия в опасном сечении
-reducer(8).M_bend_out = reducer(8).Fr_out * reducer(8).c_out * 1e-3; % Нм
-reducer(8).M_eq_out = sqrt(reducer(8).M_bend_out^2 + reducer(8).T2_check^2); % Приведенный момент, Нм
+reducer(10).M_bend_out = reducer(10).Fr_out * reducer(10).c_out * 1e-3; % Нм
+reducer(10).M_eq_out = sqrt(reducer(10).M_bend_out^2 + reducer(10).T2_check^2); % Приведенный момент, Нм
 
 % Проверка по статической прочности (упрощенно)
 % sigma_eq = M_eq / (0.1 * d^3)
-reducer(8).sigma_eq_out = (reducer(8).M_eq_out * 1000) / (0.1 * reducer(8).d2_verif^3); % МПа
+reducer(10).sigma_eq_out = (reducer(10).M_eq_out * 1000) / (0.1 * reducer(10).d2_verif^3); % МПа
 
 % Допускаемое напряжение (предел усталостной прочности с учетом коэффициентов)
 % В методичке рассчитано [sigma] = 89 МПа для стали 40Х
-reducer(8).sigma_allow_out = 89; % МПа
+reducer(10).sigma_allow_out = 89; % МПа
 
-fprintf('  Диаметр ведомого вала: %.1f мм\n', reducer(8).d2_verif);
-fprintf('  Изгибающий момент: %.2f Нм\n', reducer(8).M_bend_out);
-fprintf('  Крутящий момент: %.2f Нм\n', reducer(8).T2_check);
-fprintf('  Приведенный момент: %.2f Нм\n', reducer(8).M_eq_out);
-fprintf('  Эквивалентное напряжение: %.2f МПа\n', reducer(8).sigma_eq_out);
-fprintf('  Допускаемое напряжение: %.2f МПа\n', reducer(8).sigma_allow_out);
+fprintf('  Диаметр ведомого вала: %.1f мм\n', reducer(10).d2_verif);
+fprintf('  Изгибающий момент: %.2f Нм\n', reducer(10).M_bend_out);
+fprintf('  Крутящий момент: %.2f Нм\n', reducer(10).T2_check);
+fprintf('  Приведенный момент: %.2f Нм\n', reducer(10).M_eq_out);
+fprintf('  Эквивалентное напряжение: %.2f МПа\n', reducer(10).sigma_eq_out);
+fprintf('  Допускаемое напряжение: %.2f МПа\n', reducer(10).sigma_allow_out);
 
-if reducer(8).sigma_eq_out <= reducer(8).sigma_allow_out
+if reducer(10).sigma_eq_out <= reducer(10).sigma_allow_out
     fprintf('  -> Прочность ведомого вала обеспечена\n');
 else
     fprintf('  -> Прочность ведомого вала НЕ обеспечена\n');
@@ -687,11 +687,11 @@ end
 % выбран подшипник №7000124 (d=105, D=160, B=18) - сверхлегкая серия, т.к. вал планетарный короткий и жесткий.
 % Однако стандартный подбор обычно идет под диаметр вала. 
 % Для примера методички запишем данные из текста.
-reducer(8).bear2_code = '7000124';
-reducer(8).bear2_d = 105; % мм (посадочный диаметр в корпусе водила/вала)
-reducer(8).bear2_D = 160; % мм
-reducer(8).bear2_B = 18; % мм
-reducer(8).bear2_C = 52.0; % кН
+reducer(10).bear2_code = '7000124';
+reducer(10).bear2_d = 105; % мм (посадочный диаметр в корпусе водила/вала)
+reducer(10).bear2_D = 160; % мм
+reducer(10).bear2_B = 18; % мм
+reducer(10).bear2_C = 52.0; % кН
 
 fprintf('  Выбран подшипник ведомого вала: %s (d=%d, D=%d, B=%d, C=%.1f кН)\n', ...
     reducer(8).bear2_code, reducer(8).bear2_d, reducer(8).bear2_D, reducer(8).bear2_B, reducer(8).bear2_C);
