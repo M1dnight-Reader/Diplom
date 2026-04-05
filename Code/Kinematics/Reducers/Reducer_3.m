@@ -694,7 +694,7 @@ reducer(10).bear2_B = 18; % мм
 reducer(10).bear2_C = 52.0; % кН
 
 fprintf('  Выбран подшипник ведомого вала: %s (d=%d, D=%d, B=%d, C=%.1f кН)\n', ...
-    reducer(8).bear2_code, reducer(8).bear2_d, reducer(8).bear2_D, reducer(8).bear2_B, reducer(8).bear2_C);
+    reducer(10).bear2_code, reducer(10).bear2_d, reducer(10).bear2_D, reducer(10).bear2_B, reducer(10).bear2_C);
 
 fprintf('\n======= КОНЕЦ РАСЧЕТА ВАЛОВ =======\n');
 
